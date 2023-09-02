@@ -1,8 +1,17 @@
-var builder = WebApplication.CreateBuilder(args);
+using BookStore.Data;
+using Microsoft.EntityFrameworkCore;
 
+var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+builder.Services.AddDbContext<BookStoreContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")
+    ));
+
 builder.Services.AddControllersWithViews();
+
+#if DEBUG
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+#endif
 
 var app = builder.Build();
 
