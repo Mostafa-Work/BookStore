@@ -19,7 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repository\" />
+    <Folder Include="Views\Book\" />
+    <Folder Include="wwwroot\book\cover\" />
+    <Folder Include="wwwroot\book\gallery\" />
+    <Folder Include="wwwroot\book\pdf\" />
   </ItemGroup>
 
 </Project>

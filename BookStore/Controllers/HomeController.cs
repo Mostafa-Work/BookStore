@@ -1,4 +1,5 @@
 ﻿using BookStore.Models;
+using BookStore.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -7,15 +8,21 @@ namespace BookStore.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IBookRepository _bookRepository;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IBookRepository bookRepository)
         {
             _logger = logger;
+            _bookRepository = bookRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            BookViewModel model = await _bookRepository.GetBookByIdAsync(2);
+            string s = "";
+            foreach (var image in model.Gallery)
+                s += " " + image.Name;
+            return Json(s);
         }
 
         public IActionResult Privacy()

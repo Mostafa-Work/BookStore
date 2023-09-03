@@ -1,4 +1,5 @@
 using BookStore.Data;
+using BookStore.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,7 @@ builder.Services.AddDbContext<BookStoreContext>(options =>
     ));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
 
 #if DEBUG
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
