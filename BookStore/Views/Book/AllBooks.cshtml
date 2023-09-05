@@ -1,0 +1,34 @@
+﻿﻿@{
+    ViewData["Title"] = "All books";
+}
+@model List<BookViewModel>
+
+<div class="container">
+    <h3 class="display-4">All books</h3>
+    <div class="row">
+
+        @foreach (var book in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img src=@("/book/cover/"+book.CoverImageUrl) class="img-thumbnail" />
+                    <div class="card-body">
+                        <h3 class="card-title">@book.Title</h3>
+                        <p class="card-text">@(string.IsNullOrEmpty(book.Description) ? "Description is not availabe" : book.Description)</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <a asp-controller="Book" asp-action="Details" asp-route-id="@book.Id"
+                                   class="btn btn-sm btn-outline-secondary">View details</a>
+                            </div>
+                            <div class="btn-group">
+                                <a asp-controller="Book" asp-action="Delete" asp-route-id="@book.Id"
+                                   class="btn btn-sm btn-outline-secondary text-danger">Delete This Book</a>
+                            </div>
+                            <small class="text-muted">@(string.IsNullOrEmpty(book.Author) ? "NA" : book.Author)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -13,9 +13,6 @@ namespace BookStore.Repository
 
         public Task<int> UpdateBookAsync(BookViewModel viewModel);
         public Task<int> DeleteBookAsync(int id);
-        public Task<string> UploadFileAsync(string filePath,IFormFile file);
-        public Task DeleteFileAsync(string filePath);
-
 
     }
 }

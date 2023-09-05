@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Book\" />
     <Folder Include="wwwroot\book\cover\" />
     <Folder Include="wwwroot\book\gallery\" />
     <Folder Include="wwwroot\book\pdf\" />

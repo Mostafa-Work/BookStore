@@ -1,0 +1,85 @@
+﻿﻿@{
+    ViewData["Title"] = "Book detail " + Model.Title;
+}
+@model BookViewModel
+
+<div class="container">
+    <h3 class="display-4">Book details</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.Gallery.Count(); i++)
+                    {
+                        <div class="carousel-item @( i == 0 ? "active" : "" )">
+                            <img src="@("/book/gallery/"+Model.Gallery[i].Url)" class="d-block w-100" alt="@Model.Gallery[i].Name">
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>@Model.Title</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 text-primary">
+                    <span class="label label-primary">By: </span>
+                    <span class="monospaced">@Model.Author</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="description">
+                        @Model.Description
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="@("/book/pdf/"+Model.BookPdfUrl)" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModal">
+                        Read now
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a asp-action="Update" asp-controller="Book" asp-route-id="@Model.Id" class="btn btn-outline-primary" data-toggle="modal" data-target="#exampleModal">
+                        Update Book
+                    </a>
+                </div>
+            </div>
+            <hr />
+
+            <ul class="list-group">
+                <li class="list-group-item"><span class="font-weight-bold">Category - </span> @Model.Category</li>
+                <li class="list-group-item"><span class="font-weight-bold">Total pages - </span> @Model.TotalPages</li>
+                <li class="list-group-item"><span class="font-weight-bold">Language - </span> @Model.Language</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+

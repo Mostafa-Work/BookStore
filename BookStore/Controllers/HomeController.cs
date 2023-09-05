@@ -18,11 +18,11 @@ namespace BookStore.Controllers
 
         public async Task<IActionResult> Index()
         {
-            BookViewModel model = await _bookRepository.GetBookByIdAsync(2);
-            string s = "";
-            foreach (var image in model.Gallery)
-                s += " " + image.Name;
-            return Json(s);
+            //BookViewModel model = await _bookRepository.GetBookByIdAsync(2);
+            //string s = "";
+            //foreach (var image in model.Gallery)
+            //    s += " " + image.Name;
+            return View();
         }
 
         public IActionResult Privacy()
