@@ -7,14 +7,11 @@
         {
             this.env = env;
         }
-        public async Task<string> UploadFileAsync(string folderPath, IFormFile file)
+        public async Task UploadFileAsync(string creationPhysicalPath, IFormFile file)
         {
-            string fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            string creationPhysicalPath = Path.Combine(env.WebRootPath, folderPath, fileName);
             FileStream fileStream = new FileStream(creationPhysicalPath, FileMode.Create);
             await file.CopyToAsync(fileStream);
             fileStream.Close();
-            return fileName;
         }
 
         public async Task DeleteFileAsync(string filePath)

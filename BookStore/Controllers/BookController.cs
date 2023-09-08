@@ -31,43 +31,26 @@ namespace BookStore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(BookViewModel model)
+        public async Task<IActionResult> Create(BookViewModel viewModel)
         {
             if(ModelState.IsValid)
             {
-                if(model.BookCover != null)
-                {
-                    model.CoverImageUrl= await filesHelper.UploadFileAsync("book/cover", model.BookCover);
-                }
-                else
+                if(viewModel.BookCover == null)
                     ModelState.AddModelError("BookCover", "please add Book Cover Image");
 
-
-                if (model.BookPdf != null)
-                {
-                    model.BookPdfUrl = await filesHelper.UploadFileAsync("book/pdf", model.BookPdf);
-                }
-                else
+                if (viewModel.BookPdf == null)
                     ModelState.AddModelError("BookPdf", "please add Book PDF");
 
-                model.Gallery = new List<GalleryImageViewModel>();
-                if(model.GalleryFiles != null)
-                {
-                    foreach (var imageFile in model.GalleryFiles)
-                        model.Gallery.Add(new GalleryImageViewModel()
-                        {
-                            Name = imageFile.FileName,
-                            Url = await filesHelper.UploadFileAsync("book/gallery", imageFile)
-                        }); ;
-                }
-                else
+                if(viewModel.GalleryFiles == null)
                     ModelState.AddModelError("GalleryFiles", "please add Gallery Images");
 
                 if (ModelState.ErrorCount>0)
                     return View();
 
-                await bookRepository.AddNewBookAsync(model);
-                return RedirectToAction("AllBooks");
+                if (await bookRepository.AddNewBookAsync(viewModel) != 0)
+                    return RedirectToAction("AllBooks");
+                else
+                    throw new Exception("Error Occured while adding new book");
             }
 
             return View();
@@ -81,8 +64,10 @@ namespace BookStore.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            await bookRepository.DeleteBookAsync(id);
-            return RedirectToAction("AllBooks");
+            if(await bookRepository.DeleteBookAsync(id)!=0)
+                return RedirectToAction("AllBooks");
+
+            throw new Exception("Error Occured While Deleting");
         }
 
         public async Task<IActionResult> Update(int id)
@@ -96,35 +81,12 @@ namespace BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (viewModel.BookCover != null)
-                {
-                    viewModel.CoverImageUrl = await filesHelper.UploadFileAsync("book/cover", viewModel.BookCover);
-                }
+                if(await bookRepository.UpdateBookAsync(viewModel)!=0)
+                    return RedirectToAction("AllBooks");
 
-                if (viewModel.BookPdf != null)
-                {
-                    viewModel.BookPdfUrl = await filesHelper.UploadFileAsync("book/pdf", viewModel.BookPdf);
-                }
-
-                viewModel.Gallery = new List<GalleryImageViewModel>();
-
-                if (viewModel.GalleryFiles != null)
-                {
-                    foreach (var imageFile in viewModel.GalleryFiles)
-                        viewModel.Gallery.Add(new GalleryImageViewModel()
-                        {
-                            Name = imageFile.FileName,
-                            Url = await filesHelper.UploadFileAsync("book/gallery", imageFile)
-                        }); ;
-                }
-
-                await bookRepository.UpdateBookAsync(viewModel);
-                return RedirectToAction("AllBooks");
+                throw new Exception("Error occured While Updating");
             }
-
             return View();
         }
-
-
     }
 }

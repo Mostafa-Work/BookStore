@@ -27,23 +27,32 @@ namespace BookStore.Repository
                 Description = viewModel.Description,
                 LanguageId = viewModel.LanguageId,
                 Category = viewModel.Category,
-                CoverImageUrl = viewModel.CoverImageUrl,
-                BookPdfUrl = viewModel.BookPdfUrl,
+                CoverImageUrl = Guid.NewGuid().ToString()+"_"+viewModel.BookCover.FileName,
+                BookPdfUrl = Guid.NewGuid().ToString() + "_" + viewModel.BookPdf.FileName,
                 TotalPages= viewModel.TotalPages,
                 CreatedOn=DateTime.UtcNow,
                 UpdatedOn=DateTime.UtcNow,
             };
 
-            newBook.Gallery =viewModel.Gallery.Select(x => new GalleryImage()
+            newBook.Gallery =viewModel.GalleryFiles.Select(x => new GalleryImage()
             {
                 Name = x.Name,
-                Url = x.Url
+                Url = Guid.NewGuid().ToString()+"_"+x.FileName
             }).ToList();
 
             await context.Books.AddAsync(newBook);
             await context.SaveChangesAsync();
-            return newBook.Id;
 
+            //Upload New Files
+            await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/cover", newBook.CoverImageUrl),
+                viewModel.BookCover);
+            await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/pdf", newBook.BookPdfUrl), 
+                viewModel.BookPdf);
+            for(int i=0;i<viewModel.GalleryFiles.Count;i++)
+                await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/gallery", newBook.Gallery[i].Url), 
+                    viewModel.GalleryFiles[i]);
+            
+            return newBook.Id;
         }
 
         public async Task<int> DeleteBookAsync(int id)
@@ -51,15 +60,21 @@ namespace BookStore.Repository
             Book book= context.Books.Include(x=>x.Gallery).FirstOrDefault(x=>x.Id==id);
             if (book != null)
             {
-                await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/pdf", book.BookPdfUrl));
-                await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/cover", book.CoverImageUrl));
-                foreach(var galleryimage in book.Gallery)
-                    await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/gallery", galleryimage.Url));
+                List<string> filesToBeDeleted = new List<string>();
+
+                filesToBeDeleted.Add(Path.Combine(env.WebRootPath, "book/cover", book.CoverImageUrl));
+                filesToBeDeleted.Add(Path.Combine(env.WebRootPath, "book/pdf", book.BookPdfUrl));
+                foreach (var galleryImage in book.Gallery)
+                    filesToBeDeleted.Add(Path.Combine(env.WebRootPath,"book/gallery",galleryImage.Url));
 
                 context.Books.Remove(book);
                 await context.SaveChangesAsync();
+
+                foreach (var filePath in filesToBeDeleted)
+                    await filesHelper.DeleteFileAsync(filePath);
+                return id;
             }
-            return book.Id;
+            return 0;
         }
 
         public async Task<List<BookViewModel>> GetAllBooksAsync()
@@ -166,31 +181,37 @@ namespace BookStore.Repository
         public async Task<int> UpdateBookAsync(BookViewModel viewModel)
         {
             Book bookToBeUpdated = await context.Books.Include(x=>x.Gallery).Where(x=>x.Id==viewModel.Id).FirstOrDefaultAsync();
-            
+            if (bookToBeUpdated == null)
+                return 0;
+
+            List<string> filesToBeDeleted =new List<string>();
+
+            //Check for files to be Deleted and generate new Names
             if (viewModel.BookCover != null)
             {
-                await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/cover",bookToBeUpdated.CoverImageUrl));
-                bookToBeUpdated.CoverImageUrl = viewModel.CoverImageUrl;
+                filesToBeDeleted.Add(Path.Combine(env.WebRootPath, "book/cover",bookToBeUpdated.CoverImageUrl));
+                bookToBeUpdated.CoverImageUrl = Guid.NewGuid().ToString()+"_"+viewModel.BookCover.FileName;
             }
 
             if (viewModel.BookPdf != null)
             {
-                await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/pdf", bookToBeUpdated.BookPdfUrl));
-                bookToBeUpdated.BookPdfUrl = viewModel.BookPdfUrl;
+                filesToBeDeleted.Add(Path.Combine(env.WebRootPath, "book/pdf", bookToBeUpdated.BookPdfUrl));
+                bookToBeUpdated.BookPdfUrl = Guid.NewGuid().ToString() + "_" + viewModel.BookPdf.FileName;
             }
 
             if (viewModel.GalleryFiles != null)
             {
                 foreach (var galleryImage in bookToBeUpdated.Gallery)
-                    await filesHelper.DeleteFileAsync(Path.Combine(env.WebRootPath, "book/gallery", galleryImage.Url));
+                    filesToBeDeleted.Add(Path.Combine(env.WebRootPath, "book/gallery", galleryImage.Url));
+
                 //Remove existing images from db and adding new ones (Include+Reassigning)
-                bookToBeUpdated.Gallery = viewModel.Gallery.Select(x => new GalleryImage()
+                bookToBeUpdated.Gallery = viewModel.GalleryFiles.Select(x => new GalleryImage()
                 {
-                    Name = x.Name,
-                    Url = x.Url
+                    Name = x.FileName,
+                    Url = Guid.NewGuid().ToString() + "_" + x.FileName
                 }).ToList();
             }
-
+            //Update The Book To be Updated
             bookToBeUpdated.Author = viewModel.Author;
             bookToBeUpdated.Description = viewModel.Description;
             bookToBeUpdated.Category = viewModel.Category;
@@ -200,6 +221,27 @@ namespace BookStore.Repository
             bookToBeUpdated.TotalPages = viewModel.TotalPages;
 
             await context.SaveChangesAsync();
+
+            //Delete Old Files
+            foreach(string filPath in filesToBeDeleted)
+                await filesHelper.DeleteFileAsync(filPath);
+
+            //Upload New Files
+            if (viewModel.BookCover != null)
+                await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/cover", bookToBeUpdated.CoverImageUrl),
+                    viewModel.BookCover);
+
+            if (viewModel.BookPdf != null)
+                await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/pdf", bookToBeUpdated.BookPdfUrl),
+                    viewModel.BookPdf);
+            if(viewModel.GalleryFiles != null)
+            {
+                for (int i = 0; i < viewModel.GalleryFiles.Count; i++)
+                {
+                    await filesHelper.UploadFileAsync(Path.Combine(env.WebRootPath, "book/gallery", bookToBeUpdated.Gallery[i].Url), 
+                        viewModel.GalleryFiles[i]);
+                }
+            }
             return bookToBeUpdated.Id;
         }
     }

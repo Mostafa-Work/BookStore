@@ -1,6 +1,8 @@
-﻿using BookStore.Models;
+﻿using BookStore.ConfigModels;
+using BookStore.Models;
 using BookStore.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
 namespace BookStore.Controllers
@@ -9,19 +11,21 @@ namespace BookStore.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IBookRepository _bookRepository;
+        private readonly CustomConfig1 customConfig1;
+        private readonly CustomConfig2 customConfig2;
 
-        public HomeController(ILogger<HomeController> logger, IBookRepository bookRepository)
+        public HomeController(ILogger<HomeController> logger, IBookRepository bookRepository,
+            IOptions<CustomConfig1> customConfig1Option, IOptions<CustomConfig2> customConfig2Option)
         {
             _logger = logger;
             _bookRepository = bookRepository;
+            customConfig1 = customConfig1Option.Value;
+            customConfig2 = customConfig2Option.Value;
         }
 
         public async Task<IActionResult> Index()
         {
-            //BookViewModel model = await _bookRepository.GetBookByIdAsync(2);
-            //string s = "";
-            //foreach (var image in model.Gallery)
-            //    s += " " + image.Name;
+
             return View();
         }
 
