@@ -1,0 +1,19 @@
+﻿@using BookStore.Data
+@inject Microsoft.AspNetCore.Identity.SignInManager<ApplicationUser> _signInManager
+
+@if (_signInManager.IsSignedIn(User))
+{
+    <li class="nav-item">
+           @* //Hello @(User.FindFirst("UserFirstName").Value + " " + User.FindFirst("UserLastName").Value)*@
+           Hello
+        <a class="btn btn-outline-primary" asp-action="Logout" asp-controller="Account">Logout</a>
+        <a class="btn btn-outline-primary" asp-action="ChangePassword" asp-controller="Account">Change password</a>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Login</a>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="Signup">Register</a>
+    </li>
+}

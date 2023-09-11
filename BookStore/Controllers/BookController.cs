@@ -1,6 +1,7 @@
 ﻿using BookStore.Helpers;
 using BookStore.Models;
 using BookStore.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Runtime.CompilerServices;
@@ -8,6 +9,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BookStore.Controllers
 {
+    [Authorize]
     public class BookController : Controller
     {
         private readonly IBookRepository bookRepository;
@@ -25,6 +27,7 @@ namespace BookStore.Controllers
             return View(models);
         }
 
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> Create ()
         {
             return View();
